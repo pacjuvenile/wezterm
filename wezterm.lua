@@ -10,7 +10,7 @@ M.font_size = 12.0
 M.line_height = 1.2
 
 -- color scheme
-M.color_scheme = "Catppuccin Frappe" -- Catppuccin Latte/Frappe/Macchiato/Mocha
+M.color_scheme = "Catppuccin Macchiato" -- Catppuccin Latte/Frappe/Macchiato/Mocha   
 
 -- appearance
 -- window
@@ -21,6 +21,5 @@ M.window_decorations = "RESIZE"
 
 -- opacity
 M.window_background_opacity = 0.9
-M.text_background_opacity = 0.6
 
 return M
