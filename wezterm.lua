@@ -1,18 +1,26 @@
--- Pull in the wezterm API
-local wezterm = require 'wezterm'
+local M = {}
+local wezterm = require("wezterm")
 
--- This will hold the configuration.
-local config = wezterm.config_builder()
+-- font 
+M.font = wezterm.font_with_fallback({
+    "Maple Mono NF",
+    "Maple Mono NF CN"
+})
+M.font_size = 12.0
+M.line_height = 1.2
 
--- This is where you actually apply your config choices.
+-- color scheme
+M.color_scheme = "Catppuccin Frappe" -- Catppuccin Latte/Frappe/Macchiato/Mocha
 
--- For example, changing the initial geometry for new windows:
-config.initial_cols = 120
-config.initial_rows = 30
+-- appearance
+-- window
+M.default_gui_startup_args = { "start", "--position", "110,110" }
+M.initial_cols = 120
+M.initial_rows = 25
+M.window_decorations = "RESIZE"
 
--- or, changing the font size and color scheme.
-config.font_size = 10
-config.color_scheme = 'AdventureTime'
+-- opacity
+M.window_background_opacity = 0.9
+M.text_background_opacity = 0.6
 
--- Finally, return the configuration to wezterm:
-return config
+return M
