@@ -19,7 +19,6 @@ M.initial_cols = 120
 M.initial_rows = 25
 M.window_decorations = "RESIZE"
 M.adjust_window_size_when_changing_font_size = false
-M.hide_tab_bar_if_only_one_tab = true
 M.show_new_tab_button_in_tab_bar = false
 M.use_fancy_tab_bar = false
 
