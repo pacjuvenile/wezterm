@@ -50,7 +50,7 @@ M.key_tables = {
             action = wezterm.action.CopyMode 'MoveToStartOfNextLine',
         },
         {
-            key = 'Escape',
+            key = 'i',
             mods = 'NONE',
             action = wezterm.action.Multiple {
                 { CopyMode = 'Close' },
@@ -246,7 +246,6 @@ M.key_tables = {
             mods = 'NONE',
             action = wezterm.action.Multiple {
                 { CopyTo = 'ClipboardAndPrimarySelection' },
-                { CopyMode = 'Close' },
             },
         },
         { key = 'PageUp',   mods = 'NONE', action = wezterm.action.CopyMode 'PageUp' },
