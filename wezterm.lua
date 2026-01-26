@@ -31,7 +31,7 @@ M.window_padding = {
 
 -- opacity
 M.window_background_opacity = 0.9
-M.text_background_opacity = 0.9
+M.text_background_opacity = 0.7
 
 -- keyboard
 M.keys = {
