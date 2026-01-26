@@ -11,7 +11,6 @@ M.line_height = 1.2
 
 -- color scheme
 M.color_scheme = "Catppuccin Macchiato" -- Catppuccin Latte/Frappe/Macchiato/Mocha
--- M.color_scheme = "Astrodark (Gogh)" -- Catppuccin Latte/Frappe/Macchiato/Mocha
 
 -- appearance
 -- window
@@ -32,7 +31,7 @@ M.window_padding = {
 
 -- opacity
 M.window_background_opacity = 0.9
-M.text_background_opacity = 0.9
+M.text_background_opacity = 0.8
 
 -- keyboard
 M.keys = {
