@@ -12,9 +12,12 @@ M.line_height = 1.2
 -- color scheme
 M.color_scheme = "Catppuccin Macchiato" -- Catppuccin Latte/Frappe/Macchiato/Mocha
 
+-- startup
+M.default_gui_startup_args = { "start", "--position", "130,110", "wsl" }
+-- M.default_gui_startup_args = { "start", "--position", "130,110" }
+
 -- appearance
 -- window
-M.default_gui_startup_args = { "start", "--position", "130,110" }
 M.initial_cols = 120
 M.initial_rows = 27
 M.window_decorations = "RESIZE"
