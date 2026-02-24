@@ -1,31 +1,31 @@
-local M = {}
 local wezterm = require("wezterm")
+Config = wezterm.config_builder()
 
 -- font
-M.font = wezterm.font_with_fallback({
+Config.font = wezterm.font_with_fallback({
 	"Maple Mono NF",
 	"Maple Mono NF CN"
 })
-M.font_size = 12.0
-M.line_height = 1.2
+Config.font_size = 12.0
+Config.line_height = 1.2
 
 -- color scheme
-M.color_scheme = "Catppuccin Macchiato" -- Catppuccin Latte/Frappe/Macchiato/Mocha
+Config.color_scheme = "Catppuccin Macchiato" -- Catppuccin Latte/Frappe/Macchiato/Mocha
 
 -- startup
-M.default_gui_startup_args = { "start", "--position", "130,110" }
-M.default_prog = { "wsl" }
+Config.default_gui_startup_args = { "start", "--position", "130,110" }
+Config.default_prog = { "wsl" }
 
 -- appearance
 -- window
-M.initial_cols = 120
-M.initial_rows = 27
-M.window_decorations = "RESIZE"
-M.adjust_window_size_when_changing_font_size = false
-M.show_new_tab_button_in_tab_bar = false
-M.hide_tab_bar_if_only_one_tab = true
-M.use_fancy_tab_bar = false
-M.window_padding = {
+Config.initial_cols = 120
+Config.initial_rows = 27
+Config.window_decorations = "RESIZE"
+Config.adjust_window_size_when_changing_font_size = false
+Config.show_new_tab_button_in_tab_bar = false
+Config.hide_tab_bar_if_only_one_tab = true
+Config.use_fancy_tab_bar = false
+Config.window_padding = {
 	left = 10,
 	right = 0,
 	top = 10,
@@ -33,11 +33,11 @@ M.window_padding = {
 }
 
 -- opacity
-M.window_background_opacity = 0.85
-M.text_background_opacity = 0.85
+Config.window_background_opacity = 0.85
+Config.text_background_opacity = 0.85
 
 -- keymap
-M.keys = {
+Config.keys = {
 	-- 进入复制模式
 	{
 		key = "Escape",
@@ -46,7 +46,7 @@ M.keys = {
 	}
 }
 
-M.key_tables = {
+Config.key_tables = {
 	copy_mode = {
 		{ key = 'Tab', mods = 'NONE', action = wezterm.action.CopyMode 'MoveForwardWord' },
 		{
@@ -291,4 +291,4 @@ M.key_tables = {
 	},
 }
 
-return M
+return Config
