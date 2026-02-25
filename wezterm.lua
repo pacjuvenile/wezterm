@@ -1,8 +1,4 @@
 Wezterm = require("wezterm")
-package.path = package.path .. ';' .. Wezterm.config_dir .. '/lua/?.lua'
+package.path = Wezterm.config_dir .. '/lua/?.lua;' .. Wezterm.config_dir .. '/lua/?/init.lua;' .. package.path
 
-Config = Wezterm.config_builder()
-require('core.options')
-require('core.keymaps')
-
-return Config
+require('custom')
