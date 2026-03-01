@@ -4,9 +4,15 @@ Config.key_map_preference = 'Mapped'
 Config.keys = {
 	-- 进入复制模式
 	{
-		key = "y",
-		mods = "CTRL",
+		key = 'y',
+		mods = 'CTRL',
 		action = Wezterm.action.ActivateCopyMode
+	},
+	-- 终端内粘贴
+	{
+		key = 'p',
+		mods = 'ALT|SHIFT',
+		action = Wezterm.action.PasteFrom('Clipboard')
 	}
 }
 
