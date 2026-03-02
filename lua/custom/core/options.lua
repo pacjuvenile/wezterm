@@ -1,3 +1,6 @@
+-- reload
+Config.automatically_reload_config = false
+
 -- font
 Config.font = Wezterm.font_with_fallback({
 	"Maple Mono NF",

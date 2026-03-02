@@ -1,19 +1,142 @@
 Config.key_map_preference = 'Mapped'
+Config.disable_default_key_bindings = true
 
 -- keymap
 Config.keys = {
+	-- 重载配置
+	{
+		key = 'R',
+		mods = 'CTRL|ALT|SHIFT',
+		action = Wezterm.action.ReloadConfiguration
+	},
 	-- 进入复制模式
 	{
 		key = 'y',
-		mods = 'CTRL',
+		mods = 'CTRL|ALT',
 		action = Wezterm.action.ActivateCopyMode
+	},
+	-- 进入搜索模式
+	{
+		key = 'f',
+		mods = 'CTRL|ALT',
+		action = Wezterm.action.Search({ CaseSensitiveString = "" })
+	},
+	-- 进入选择模式
+	{
+		key = 's',
+		mods = 'CTRL|ALT|SHIFT',
+		action = Wezterm.action.QuickSelect
 	},
 	-- 终端内粘贴
 	{
 		key = 'p',
-		mods = 'ALT|SHIFT',
+		mods = 'CTRL|ALT',
 		action = Wezterm.action.PasteFrom('Clipboard')
-	}
+	},
+	-- 插入Unicode字符
+	{
+		key = 'u',
+		mods = 'CTRL|ALT',
+		action = Wezterm.action.CharSelect
+	},
+	-- 字体调整
+	{
+		key = '+',
+		mods = 'CTRL|ALT|SHIFT',
+		action = Wezterm.action.IncreaseFontSize
+	},
+	{
+		key = '-',
+		mods = 'CTRL|ALT',
+		action = Wezterm.action.DecreaseFontSize
+	},
+	{
+		key = '=',
+		mods = 'CTRL|ALT',
+		action = Wezterm.action.ResetFontSize
+	},
+	-- 标签页
+	{
+		key = 't',
+		mods = 'CTRL|ALT',
+		action = Wezterm.action.SpawnTab('CurrentPaneDomain')
+	},
+	{
+		key = 'w',
+		mods = 'CTRL|ALT',
+		action = Wezterm.action.CloseCurrentTab({ confirm = true })
+	},
+	{
+		key = '1',
+		mods = 'CTRL|ALT',
+		action = Wezterm.action.ActivateTab(0)
+	},
+	{
+		key = '2',
+		mods = 'CTRL|ALT',
+		action = Wezterm.action.ActivateTab(1)
+	},
+	{
+		key = '3',
+		mods = 'CTRL|ALT',
+		action = Wezterm.action.ActivateTab(2)
+	},
+	{
+		key = '4',
+		mods = 'CTRL|ALT',
+		action = Wezterm.action.ActivateTab(3)
+	},
+	{
+		key = '5',
+		mods = 'CTRL|ALT',
+		action = Wezterm.action.ActivateTab(4)
+	},
+	{
+		key = '6',
+		mods = 'CTRL|ALT',
+		action = Wezterm.action.ActivateTab(5)
+	},
+	{
+		key = '7',
+		mods = 'CTRL|ALT',
+		action = Wezterm.action.ActivateTab(6)
+	},
+	{
+		key = '8',
+		mods = 'CTRL|ALT',
+		action = Wezterm.action.ActivateTab(7)
+	},
+	{
+		key = '9',
+		mods = 'CTRL|ALT',
+		action = Wezterm.action.ActivateTab(8)
+	},
+	{
+		key = '0',
+		mods = 'CTRL|ALT',
+		action = Wezterm.action.ActivateTab(-1)
+	},
+	{
+		key = 'n',
+		mods = 'CTRL|ALT',
+		action = Wezterm.action.ActivateTabRelative(1)
+	},
+	{
+		key = 'p',
+		mods = 'CTRL|ALT',
+		action = Wezterm.action.ActivateTabRelative(-1)
+	},
+	{
+		key = 'h',
+		mods = 'CTRL|ALT',
+		action = Wezterm.action.MoveTabRelative(-1)
+	},
+	{
+		key = 'l',
+		mods = 'CTRL|ALT',
+		action = Wezterm.action.MoveTabRelative(1)
+	},
+
 }
 
 Config.key_tables = {
@@ -151,7 +274,7 @@ Config.key_tables = {
 			key = 'y',
 			mods = 'NONE',
 			action = Wezterm.action.Multiple {
-				{ CopyTo = 'ClipboardAndPrimarySelection' },
+				{ CopyTo = 'Clipboard' },
 				{ CopyMode = 'Close' }
 			}
 		}
