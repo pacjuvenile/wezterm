@@ -24,7 +24,7 @@ Config.keys = {
 	-- 进入选择模式
 	{
 		key = 's',
-		mods = 'CTRL|ALT|SHIFT',
+		mods = 'CTRL|ALT',
 		action = Wezterm.action.QuickSelect
 	},
 	-- 终端内粘贴
@@ -54,6 +54,37 @@ Config.keys = {
 		key = '=',
 		mods = 'CTRL|ALT',
 		action = Wezterm.action.ResetFontSize
+	},
+	-- 面板调整
+	{
+		key = 'r',
+		mods = 'CTRL|ALT',
+		action = Wezterm.action.SplitVertical({ domain = 'CurrentPaneDomain' })
+	},
+	{
+		key = 'd',
+		mods = 'CTRL|ALT',
+		action = Wezterm.action.SplitHorizontal({ domain = 'CurrentPaneDomain' })
+	},
+	{
+		key = 'h',
+		mods = 'CTRL|ALT',
+		action = Wezterm.action.ActivatePaneDirection('Left')
+	},
+	{
+		key = 'j',
+		mods = 'CTRL|ALT',
+		action = Wezterm.action.ActivatePaneDirection('Down')
+	},
+	{
+		key = 'k',
+		mods = 'CTRL|ALT',
+		action = Wezterm.action.ActivatePaneDirection('Up')
+	},
+	{
+		key = 'l',
+		mods = 'CTRL|ALT',
+		action = Wezterm.action.ActivatePaneDirection('Right')
 	},
 	-- 标签页
 	{
@@ -127,16 +158,15 @@ Config.keys = {
 		action = Wezterm.action.ActivateTabRelative(-1)
 	},
 	{
-		key = 'h',
-		mods = 'CTRL|ALT',
+		key = 'H',
+		mods = 'CTRL|ALT|SHIFT',
 		action = Wezterm.action.MoveTabRelative(-1)
 	},
 	{
-		key = 'l',
-		mods = 'CTRL|ALT',
+		key = 'L',
+		mods = 'CTRL|ALT|SHIFT',
 		action = Wezterm.action.MoveTabRelative(1)
 	},
-
 }
 
 Config.key_tables = {
