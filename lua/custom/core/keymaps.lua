@@ -52,7 +52,6 @@ Config.keys = {
 		action = Wezterm.action.ActivateKeyTable {
 			name = 'pane_mode',
 			one_shot = false,
-			timeout_milliseconds = 1000,
 			until_unknown = true
 		}
 	},
@@ -64,7 +63,6 @@ Config.keys = {
 		action = Wezterm.action.ActivateKeyTable {
 			name = 'resize_mode',
 			one_shot = false,
-			timeout_milliseconds = 1000,
 			until_unknown = true
 		}
 	},
@@ -76,7 +74,6 @@ Config.keys = {
 		action = Wezterm.action.ActivateKeyTable {
 			name = 'tab_mode',
 			one_shot = false,
-			timeout_milliseconds = 1000,
 			until_unknown = true
 		}
 	},
