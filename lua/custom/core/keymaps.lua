@@ -9,6 +9,12 @@ Config.keys = {
 		mods = 'CTRL|ALT|SHIFT',
 		action = Wezterm.action.ReloadConfiguration
 	},
+	-- 命令面板
+	{
+		key = 'P',
+		mods = 'CTRL|ALT|SHIFT',
+		action = Wezterm.action.ActivateCommandPalette
+	},
 	-- 终端内粘贴
 	{
 		key = 'v',
@@ -44,25 +50,40 @@ Config.keys = {
 		mods = 'CTRL|ALT',
 		action = Wezterm.action.ActivateCopyMode
 	},
-
-	-- 进入面板模式
+	-- 面板尺寸调整
 	{
-		key = 'p',
+		key = 'h',
 		mods = 'CTRL|ALT',
-		action = Wezterm.action.ActivateKeyTable {
-			name = 'pane_mode',
-			one_shot = false,
-			until_unknown = true
-		}
+		action = Wezterm.action.AdjustPaneSize({ "Left", 1 })
+	},
+	{
+		key = 'j',
+		mods = 'CTRL|ALT',
+		action = Wezterm.action.AdjustPaneSize({ "Down", 1 })
+	},
+	{
+		key = 'k',
+		mods = 'CTRL|ALT',
+		action = Wezterm.action.AdjustPaneSize({ "Up", 1 })
+	},
+	{
+		key = 'l',
+		mods = 'CTRL|ALT',
+		action = Wezterm.action.AdjustPaneSize({ "Right", 1 })
+	},
+	{
+		key = 'f',
+		mods = 'CTRL|ALT',
+			action = Wezterm.action.TogglePaneZoomState
 	},
 
-	-- 进入调整模式
+	-- 进入窗格模式
 	{
-		key = 'r',
+		key = 'w',
 		mods = 'CTRL|ALT',
 		action = Wezterm.action.ActivateKeyTable {
-			name = 'resize_mode',
-			one_shot = false,
+			name = 'window_mode',
+			one_shot = true,
 			until_unknown = true
 		}
 	},
@@ -73,7 +94,7 @@ Config.keys = {
 		mods = 'CTRL|ALT',
 		action = Wezterm.action.ActivateKeyTable {
 			name = 'tab_mode',
-			one_shot = false,
+			one_shot = true,
 			until_unknown = true
 		}
 	},
@@ -84,7 +105,7 @@ Config.key_tables = {
 	copy_mode = {
 		-- quit
 		{
-			key = 'Escape',
+			key = 'q',
 			mods = 'NONE',
 			action = Wezterm.action.CopyMode 'Close'
 		},
@@ -186,7 +207,7 @@ Config.key_tables = {
 		},
 		-- 进入选择模式
 		{
-			key = 's',
+			key = 'f',
 			mods = 'NONE',
 			action = Wezterm.action.QuickSelect
 		},
@@ -201,13 +222,12 @@ Config.key_tables = {
 	-- 搜索模式键位
 	search_mode = {
 		{
-			key = 'Escape',
+			key = 'q',
 			mods = 'NONE',
 			action = Wezterm.action.Multiple {
 				Wezterm.action.CopyMode 'ClearPattern',
-				Wezterm.action.ActivateCopyMode,
-				Wezterm.action.CopyMode { SetSelectionMode = 'Cell' }
-			}
+				Wezterm.action.CopyMode 'Close'
+				}
 		},
 		{
 			key = 'Enter',
@@ -232,11 +252,11 @@ Config.key_tables = {
 	},
 
 	-- 面板模式键位
-	pane_mode = {
+	window_mode = {
 		{
-			key = 'Escape',
+			key = 'r',
 			mods = 'NONE',
-			action = Wezterm.action.PopKeyTable
+			action = Wezterm.action.SplitHorizontal({ domain = 'CurrentPaneDomain' })
 		},
 		{
 			key = 'd',
@@ -244,14 +264,17 @@ Config.key_tables = {
 			action = Wezterm.action.SplitVertical({ domain = 'CurrentPaneDomain' })
 		},
 		{
-			key = 'r',
-			mods = 'NONE',
-			action = Wezterm.action.SplitHorizontal({ domain = 'CurrentPaneDomain' })
-		},
-		{
 			key = 'x',
 			mods ='NONE',
-			action = Wezterm.action.CloseCurrentPane { confirm = true }
+			action = Wezterm.action.CloseCurrentPane { confirm = false }
+		},
+		{
+			key = 'f',
+			mods = 'NONE',
+			action = Wezterm.action.PaneSelect {
+				alphabet = 'asdfghjklzxcvbnmqwertyuiop',
+				mode = 'Activate'
+			}
 		},
 		{
 			key = 'h',
@@ -275,47 +298,8 @@ Config.key_tables = {
 		},
 	},
 
-	-- 调整模式键位
-	resize_mode = {
-		{
-			key = 'Escape',
-			mods = 'NONE',
-			action = Wezterm.action.PopKeyTable
-		},
-		{
-			key = 'h',
-			mods = 'NONE',
-			action = Wezterm.action.AdjustPaneSize({ "Left", 1 })
-		},
-		{
-			key = 'j',
-			mods = 'NONE',
-			action = Wezterm.action.AdjustPaneSize({ "Down", 1 })
-		},
-		{
-			key = 'k',
-			mods = 'NONE',
-			action = Wezterm.action.AdjustPaneSize({ "Up", 1 })
-		},
-		{
-			key = 'l',
-			mods = 'NONE',
-			action = Wezterm.action.AdjustPaneSize({ "Right", 1 })
-		},
-		{
-			key = 'f',
-			mods = 'NONE',
-			action = Wezterm.action.TogglePaneZoomState
-		}
-	},
-
 	-- 标签页模式键位
 	tab_mode = {
-		{
-			key = 'Escape',
-			mods = 'NONE',
-			action = Wezterm.action.PopKeyTable
-		},
 		{
 			key = 't',
 			mods = 'NONE',
@@ -324,62 +308,12 @@ Config.key_tables = {
 		{
 			key = 'w',
 			mods = 'NONE',
-			action = Wezterm.action.CloseCurrentTab({ confirm = true })
+			action = Wezterm.action.CloseCurrentTab({ confirm = false })
 		},
 		{
-			key = '1',
+			key = 'f',
 			mods = 'NONE',
-			action = Wezterm.action.ActivateTab(0)
-		},
-		{
-			key = '2',
-			mods = 'NONE',
-			action = Wezterm.action.ActivateTab(1)
-		},
-		{
-			key = '3',
-			mods = 'NONE',
-			action = Wezterm.action.ActivateTab(2)
-		},
-		{
-			key = '4',
-			mods = 'NONE',
-			action = Wezterm.action.ActivateTab(3)
-		},
-		{
-			key = '5',
-			mods = 'NONE',
-			action = Wezterm.action.ActivateTab(4)
-		},
-		{
-			key = '6',
-			mods = 'NONE',
-			action = Wezterm.action.ActivateTab(5)
-		},
-		{
-			key = '7',
-			mods = 'NONE',
-			action = Wezterm.action.ActivateTab(6)
-		},
-		{
-			key = '8',
-			mods = 'NONE',
-			action = Wezterm.action.ActivateTab(7)
-		},
-		{
-			key = '9',
-			mods = 'NONE',
-			action = Wezterm.action.ActivateTab(8)
-		},
-		{
-			key = '0',
-			mods = 'NONE',
-			action = Wezterm.action.ActivateTab(-1)
-		},
-		{
-			key = 'n',
-			mods = 'NONE',
-			action = Wezterm.action.ActivateTabRelative(1)
+			action = Wezterm.action.ShowTabNavigator
 		},
 		{
 			key = 'p',
@@ -387,14 +321,31 @@ Config.key_tables = {
 			action = Wezterm.action.ActivateTabRelative(-1)
 		},
 		{
-			key = 'h',
+			key = 'n',
+			mods = 'NONE',
+			action = Wezterm.action.ActivateTabRelative(1)
+		},
+		{
+			key = 'LeftArrow',
 			mods = 'NONE',
 			action = Wezterm.action.MoveTabRelative(-1)
 		},
 		{
-			key = 'l',
+			key = 'RightArrow',
 			mods = 'NONE',
 			action = Wezterm.action.MoveTabRelative(1)
+		},
+		{
+			key = 'r',
+			mods = 'NONE',
+			action = Wezterm.action.PromptInputLine {
+				description = 'Rename tab title',
+				action = Wezterm.action_callback(function(window, _, line)
+					if line then
+						window:active_tab():set_title(line)
+					end
+				end),
+			},
 		}
 	}
 }
