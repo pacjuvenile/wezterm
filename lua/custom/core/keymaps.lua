@@ -18,21 +18,9 @@ Config.keys = {
 	},
 	-- 调试信息
 	{
-		key = 'L',
+		key = 'D',
 		mods = 'CTRL|ALT|SHIFT',
 		action = Wezterm.action.ShowDebugOverlay
-	},
-	-- 命令面板
-	{
-		key = 'P',
-		mods = 'CTRL|ALT|SHIFT',
-		action = Wezterm.action.ActivateCommandPalette
-	},
-	-- 插入Unicode字符
-	{
-		key = 'u',
-		mods = 'CTRL|ALT',
-		action = Wezterm.action.CharSelect
 	},
 	-- 字体调整
 	{
@@ -50,11 +38,17 @@ Config.keys = {
 		mods = 'CTRL|ALT',
 		action = Wezterm.action.ResetFontSize
 	},
+	-- 插入Unicode字符
+	{
+		key = 'u',
+		mods = 'CTRL|ALT',
+		action = Wezterm.action.CharSelect
+	},
 
 	-- 窗格快捷键
 	-- 新建/删除窗格
 	{
-		key = 'r',
+		key = 'v',
 		mods = 'CTRL|ALT',
 		action = Wezterm.action_callback(function(window, pane)
 			local u = pane:get_current_working_dir()
@@ -79,7 +73,7 @@ Config.keys = {
 		end)
 	},
 	{
-		key = 'd',
+		key = 'h',
 		mods = 'CTRL|ALT',
 		action = Wezterm.action.SplitVertical({ domain = 'CurrentPaneDomain' })
 	},
@@ -89,26 +83,6 @@ Config.keys = {
 		action = Wezterm.action.CloseCurrentPane { confirm = false }
 	},
 	-- 切换窗格焦点
-	{
-		key = 'h',
-		mods = 'CTRL|ALT',
-		action = Wezterm.action.ActivatePaneDirection('Left')
-	},
-	{
-		key = 'j',
-		mods = 'CTRL|ALT',
-		action = Wezterm.action.ActivatePaneDirection('Down')
-	},
-	{
-		key = 'k',
-		mods = 'CTRL|ALT',
-		action = Wezterm.action.ActivatePaneDirection('Up')
-	},
-	{
-		key = 'l',
-		mods = 'CTRL|ALT',
-		action = Wezterm.action.ActivatePaneDirection('Right')
-	},
 	{
 		key = 'a',
 		mods = 'CTRL|ALT',
@@ -183,13 +157,13 @@ Config.keys = {
 	},
 	-- 标签页移动
 	{
-		key = 'LeftArrow',
-		mods = 'CTRL|ALT',
+		key = 'P',
+		mods = 'CTRL|ALT|SHIFT',
 		action = Wezterm.action.MoveTabRelative(-1)
 	},
 	{
-		key = 'RightArrow',
-		mods = 'CTRL|ALT',
+		key = 'N',
+		mods = 'CTRL|ALT|SHIFT',
 		action = Wezterm.action.MoveTabRelative(1)
 	},
 	-- 标签页重命名
