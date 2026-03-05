@@ -14,6 +14,7 @@ Config.color_scheme = "Catppuccin Macchiato" -- Catppuccin Latte/Frappe/Macchiat
 
 -- startup
 Config.default_gui_startup_args = { "start", "--position", "130,110" }
+Config.default_domain = 'WSL:NixOS'
 Config.default_prog = { "wsl" }
 
 -- appearance

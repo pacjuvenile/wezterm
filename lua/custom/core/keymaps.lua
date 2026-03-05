@@ -58,7 +58,8 @@ Config.keys = {
 			elseif type(u) == "string" then
 				cwd = (u:gsub("^file://[^/]*", ""))
 			end
-			Wezterm.log_info("u=" .. tostring(u) .. " cwd=" .. tostring(cwd))
+
+			Wezterm.log_info('domain=' .. pane:get_domain_name() .. ' u=' .. tostring(pane:get_current_working_dir()))
 			window:perform_action(
 				Wezterm.action.SplitPane({
 					direction = "Right",
