@@ -44,12 +44,6 @@ Config.keys = {
 		action = Wezterm.action.ResetFontSize
 	},
 
-	-- 进入复制模式
-	{
-		key = 'y',
-		mods = 'CTRL|ALT',
-		action = Wezterm.action.ActivateCopyMode
-	},
 	-- 面板尺寸调整
 	{
 		key = 'h',
@@ -77,12 +71,19 @@ Config.keys = {
 			action = Wezterm.action.TogglePaneZoomState
 	},
 
+	-- 进入复制模式
+	{
+		key = 'y',
+		mods = 'CTRL|ALT',
+		action = Wezterm.action.ActivateCopyMode
+	},
+
 	-- 进入窗格模式
 	{
-		key = 'w',
+		key = 'p',
 		mods = 'CTRL|ALT',
 		action = Wezterm.action.ActivateKeyTable {
-			name = 'window_mode',
+			name = 'pane_mode',
 			one_shot = true,
 			until_unknown = true
 		}
@@ -105,9 +106,12 @@ Config.key_tables = {
 	copy_mode = {
 		-- quit
 		{
-			key = 'q',
+			key = 'Escape',
 			mods = 'NONE',
-			action = Wezterm.action.CopyMode 'Close'
+			action = Wezterm.action.Multiple {
+				-- Wezterm.action.CopyMode 'MoveToScrollbackBottom',
+				Wezterm.action.CopyMode 'Close'
+			}
 		},
 		-- navigation
 		{
@@ -201,13 +205,13 @@ Config.key_tables = {
 			key = 'y',
 			mods = 'NONE',
 			action = Wezterm.action.Multiple {
-				{ CopyTo = 'Clipboard' },
-				{ CopyMode = 'Close' }
+				Wezterm.action.CopyTo 'Clipboard',
+				Wezterm.action.CopyMode 'Close',
 			}
 		},
 		-- 进入选择模式
 		{
-			key = 'f',
+			key = 's',
 			mods = 'NONE',
 			action = Wezterm.action.QuickSelect
 		},
@@ -222,12 +226,13 @@ Config.key_tables = {
 	-- 搜索模式键位
 	search_mode = {
 		{
-			key = 'q',
+			key = 'Escape',
 			mods = 'NONE',
 			action = Wezterm.action.Multiple {
 				Wezterm.action.CopyMode 'ClearPattern',
-				Wezterm.action.CopyMode 'Close'
-				}
+				Wezterm.action.ActivateCopyMode,
+				Wezterm.action.CopyMode { SetSelectionMode = 'Cell' }
+			}
 		},
 		{
 			key = 'Enter',
@@ -235,13 +240,8 @@ Config.key_tables = {
 			action = Wezterm.action.CopyMode 'NextMatch'
 		},
 		{
-			key = 'n',
-			mods = 'NONE',
-			action = Wezterm.action.CopyMode 'NextMatch'
-		},
-		{
-			key = 'p',
-			mods = 'NONE',
+			key = 'Enter',
+			mods = 'SHIFT',
 			action = Wezterm.action.CopyMode 'PriorMatch'
 		},
 		{
@@ -252,7 +252,7 @@ Config.key_tables = {
 	},
 
 	-- 面板模式键位
-	window_mode = {
+	pane_mode = {
 		{
 			key = 'r',
 			mods = 'NONE',
@@ -272,8 +272,16 @@ Config.key_tables = {
 			key = 'f',
 			mods = 'NONE',
 			action = Wezterm.action.PaneSelect {
-				alphabet = 'asdfghjklzxcvbnmqwertyuiop',
+				alphabet = 'asdfghjkl',
 				mode = 'Activate'
+			}
+		},
+		{
+			key = 's',
+			mods = 'NONE',
+			action = Wezterm.action.PaneSelect {
+				alphabet = 'asdfghjkl',
+				mode = 'SwapWithActive'
 			}
 		},
 		{
@@ -311,7 +319,7 @@ Config.key_tables = {
 			action = Wezterm.action.CloseCurrentTab({ confirm = false })
 		},
 		{
-			key = 'f',
+			key = 's',
 			mods = 'NONE',
 			action = Wezterm.action.ShowTabNavigator
 		},
