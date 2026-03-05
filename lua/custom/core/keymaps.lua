@@ -68,7 +68,7 @@ Config.keys = {
 	{
 		key = 'f',
 		mods = 'CTRL|ALT',
-			action = Wezterm.action.TogglePaneZoomState
+		action = Wezterm.action.TogglePaneZoomState
 	},
 
 	-- 进入复制模式
@@ -211,7 +211,7 @@ Config.key_tables = {
 		},
 		-- 进入选择模式
 		{
-			key = 's',
+			key = 'f',
 			mods = 'NONE',
 			action = Wezterm.action.QuickSelect
 		},
@@ -256,7 +256,28 @@ Config.key_tables = {
 		{
 			key = 'r',
 			mods = 'NONE',
-			action = Wezterm.action.SplitHorizontal({ domain = 'CurrentPaneDomain' })
+			action = Wezterm.action_callback(function(window, pane)
+				local u = pane:get_current_working_dir()
+				local cwd = nil
+				if type(u) == "table" then
+					cwd = u.file_path or u.path
+				elseif type(u) == "string" then
+					cwd = (u:gsub("^file://[^/]*", ""))
+				end
+
+				Wezterm.log_info("u=" .. tostring(u) .. " cwd=" .. tostring(cwd))
+				window:perform_action(
+					Wezterm.action.SplitPane({
+						direction = "Right",
+						size = { Percent = 50 },
+						command = {
+							domain = "CurrentPaneDomain",
+							cwd = cwd,
+						},
+					}),
+					pane
+				)
+			end)
 		},
 		{
 			key = 'd',
@@ -265,7 +286,7 @@ Config.key_tables = {
 		},
 		{
 			key = 'x',
-			mods ='NONE',
+			mods = 'NONE',
 			action = Wezterm.action.CloseCurrentPane { confirm = false }
 		},
 		{
@@ -319,7 +340,7 @@ Config.key_tables = {
 			action = Wezterm.action.CloseCurrentTab({ confirm = false })
 		},
 		{
-			key = 's',
+			key = 'f',
 			mods = 'NONE',
 			action = Wezterm.action.ShowTabNavigator
 		},
