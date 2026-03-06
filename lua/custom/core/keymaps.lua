@@ -1,9 +1,15 @@
 Config.key_map_preference = 'Mapped'
 Config.disable_default_key_bindings = true
+Config.disable_default_mouse_bindings = true
 
 -- keymap
 Config.keys = {
 	-- 基础快捷键
+	{
+		key = 'V',
+		mods = 'CTRL|SHIFT',
+		action = Wezterm.action.PasteFrom('Clipboard')
+	},
 	-- 重载配置
 	{
 		key = 'R',
@@ -49,6 +55,7 @@ Config.keys = {
 }
 
 Config.key_tables = {
+	copy_mode = {},
 	-- 搜索模式键位
 	search_mode = {
 		{
@@ -70,9 +77,50 @@ Config.key_tables = {
 			action = Wezterm.action.CopyMode 'PriorMatch'
 		},
 		{
-			key = 'r',
+			key = 't',
 			mods = 'CTRL',
 			action = Wezterm.action.CopyMode 'CycleMatchType'
-		},
+		}
+	}
+}
+
+Config.mouse_bindings = {
+	-- 光标滑动
+	{
+		event = { Down = { streak = 1, button = { WheelUp = 1 } } },
+		mods = 'NONE',
+		alt_screen = false,
+		action = Wezterm.action.ScrollByCurrentEventWheelDelta
+	},
+	{
+		event = { Down = { streak = 1, button = { WheelDown = 1 } } },
+		mods = 'NONE',
+		alt_screen = false,
+		action = Wezterm.action.ScrollByCurrentEventWheelDelta
+	},
+	-- 左键拖拽选区
+	{
+		event = { Down = { streak = 1, button = 'Left' } },
+		mods = 'NONE',
+		action = Wezterm.action.SelectTextAtMouseCursor('Cell')
+	},
+	{
+		event = { Drag = { streak = 1, button = 'Left' } },
+		mods = 'NONE',
+		action = Wezterm.action.ExtendSelectionToMouseCursor('Cell')
+	},
+	{
+		event = { Up = { streak = 1, button = 'Left' } },
+		mods = 'NONE',
+		action = Wezterm.action.ExtendSelectionToMouseCursor('Cell')
+	},
+	-- 右键复制
+	{
+		event = { Down = { streak = 1, button = 'Right' } },
+		mods = 'NONE',
+		action = Wezterm.action.Multiple {
+			Wezterm.action.CompleteSelection('Clipboard'),
+			Wezterm.action.ClearSelection
+		}
 	}
 }
