@@ -5,6 +5,7 @@ Config.disable_default_mouse_bindings = true
 -- keymap
 Config.keys = {
 	-- 基础快捷键
+	-- 粘贴
 	{
 		key = 'v',
 		mods = 'CTRL',
