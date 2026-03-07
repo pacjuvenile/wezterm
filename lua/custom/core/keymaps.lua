@@ -4,23 +4,24 @@ Config.disable_default_mouse_bindings = true
 
 -- keymap
 Config.keys = {
-	-- 基础快捷键
 	-- 粘贴
 	{
 		key = 'v',
 		mods = 'CTRL',
 		action = Wezterm.action.PasteFrom('Clipboard')
 	},
+
+	-- 基础快捷键
 	-- 重载配置
 	{
-		key = 'R',
-		mods = 'CTRL|ALT|SHIFT',
+		key = 'r',
+		mods = 'CTRL|ALT',
 		action = Wezterm.action.ReloadConfiguration
 	},
 	-- 调试信息
 	{
-		key = 'D',
-		mods = 'CTRL|ALT|SHIFT',
+		key = 'l',
+		mods = 'CTRL|ALT',
 		action = Wezterm.action.ShowDebugOverlay
 	},
 	-- 字体调整
@@ -43,14 +44,14 @@ Config.keys = {
 	-- 检索快捷键
 	-- 快速复制
 	{
-		key = 'Y',
-		mods = 'CTRL|ALT|SHIFT',
+		key = 'y',
+		mods = 'CTRL|ALT',
 		action = Wezterm.action.QuickSelect
 	},
 	-- 进入搜索模式
 	{
-		key = '?',
-		mods = 'CTRL|ALT|SHIFT',
+		key = '/',
+		mods = 'CTRL|ALT',
 		action = Wezterm.action.Search({ CaseSensitiveString = "" })
 	},
 }
