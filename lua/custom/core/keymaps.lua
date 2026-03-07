@@ -6,8 +6,8 @@ Config.disable_default_mouse_bindings = true
 Config.keys = {
 	-- 基础快捷键
 	{
-		key = 'V',
-		mods = 'CTRL|SHIFT',
+		key = 'v',
+		mods = 'CTRL',
 		action = Wezterm.action.PasteFrom('Clipboard')
 	},
 	-- 重载配置
