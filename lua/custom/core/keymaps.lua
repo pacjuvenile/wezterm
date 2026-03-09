@@ -6,8 +6,8 @@ Config.disable_default_mouse_bindings = true
 Config.keys = {
 	-- 粘贴
 	{
-		key = 'v',
-		mods = 'CTRL',
+		key = 'p',
+		mods = 'CTRL|ALT',
 		action = Wezterm.action.PasteFrom('Clipboard')
 	},
 
