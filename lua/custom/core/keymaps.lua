@@ -20,7 +20,7 @@ Config.keys = {
 	},
 	-- 调试信息
 	{
-		key = 'l',
+		key = 'd',
 		mods = 'CTRL|ALT',
 		action = Wezterm.action.ShowDebugOverlay
 	},
