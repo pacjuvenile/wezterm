@@ -6,7 +6,7 @@ Config.font = Wezterm.font_with_fallback({
 	"Maple Mono NF",
 	"Maple Mono NF CN"
 })
-Config.font_size = 12.0
+Config.font_size = 11.0
 Config.line_height = 1.2
 
 -- color scheme
