@@ -35,4 +35,4 @@ Config.window_padding = {
 
 -- opacity
 Config.window_background_opacity = 0.85
-Config.text_background_opacity = 0.85
+Config.text_background_opacity = 1.0
