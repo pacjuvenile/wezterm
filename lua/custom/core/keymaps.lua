@@ -4,19 +4,17 @@ Config.disable_default_mouse_bindings = true
 
 -- keymap
 Config.keys = {
-	-- 粘贴
-	{
-		key = 'p',
-		mods = 'CTRL|ALT',
-		action = Wezterm.action.PasteFrom('Clipboard')
-	},
-
-	-- 基础快捷键
 	-- 重载配置
 	{
 		key = 'r',
 		mods = 'CTRL|ALT',
 		action = Wezterm.action.ReloadConfiguration
+	},
+	-- 粘贴
+	{
+		key = 'p',
+		mods = 'CTRL|ALT',
+		action = Wezterm.action.PasteFrom('Clipboard')
 	},
 	-- 字体调整
 	{
@@ -34,8 +32,6 @@ Config.keys = {
 		mods = 'CTRL|ALT',
 		action = Wezterm.action.ResetFontSize
 	},
-
-	-- 检索快捷键
 	-- 快速复制
 	{
 		key = 'y',
