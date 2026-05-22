@@ -18,16 +18,10 @@ Config.keys = {
 		mods = 'CTRL|ALT',
 		action = Wezterm.action.ReloadConfiguration
 	},
-	-- 调试信息
-	{
-		key = 'd',
-		mods = 'CTRL|ALT',
-		action = Wezterm.action.ShowDebugOverlay
-	},
 	-- 字体调整
 	{
-		key = '+',
-		mods = 'CTRL|ALT|SHIFT',
+		key = '=',
+		mods = 'CTRL|ALT',
 		action = Wezterm.action.IncreaseFontSize
 	},
 	{
@@ -36,7 +30,7 @@ Config.keys = {
 		action = Wezterm.action.DecreaseFontSize
 	},
 	{
-		key = '=',
+		key = '0',
 		mods = 'CTRL|ALT',
 		action = Wezterm.action.ResetFontSize
 	},
