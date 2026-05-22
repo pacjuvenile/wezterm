@@ -41,43 +41,11 @@ Config.keys = {
 		key = 'y',
 		mods = 'CTRL|ALT',
 		action = Wezterm.action.QuickSelect
-	},
-	-- 进入搜索模式
-	{
-		key = '/',
-		mods = 'CTRL|ALT',
-		action = Wezterm.action.Search({ CaseSensitiveString = "" })
-	},
+	}
 }
 
 Config.key_tables = {
-	copy_mode = {},
-	-- 搜索模式键位
-	search_mode = {
-		{
-			key = 'Escape',
-			mods = 'NONE',
-			action = Wezterm.action.Multiple {
-				Wezterm.action.CopyMode 'ClearPattern',
-				Wezterm.action.CopyMode 'Close'
-			}
-		},
-		{
-			key = 'Enter',
-			mods = 'NONE',
-			action = Wezterm.action.CopyMode 'NextMatch'
-		},
-		{
-			key = 'Enter',
-			mods = 'SHIFT',
-			action = Wezterm.action.CopyMode 'PriorMatch'
-		},
-		{
-			key = 't',
-			mods = 'CTRL',
-			action = Wezterm.action.CopyMode 'CycleMatchType'
-		}
-	}
+	copy_mode = {}
 }
 
 Config.mouse_bindings = {
