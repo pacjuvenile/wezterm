@@ -2,8 +2,17 @@
 Config.automatically_reload_config = false
 
 -- font
+local emoji_font = "Noto Color Emoji"
+
+if Wezterm.target_triple:find("apple") then
+	emoji_font = "Apple Color Emoji"
+elseif Wezterm.target_triple:find("windows") then
+	emoji_font = "Segoe UI Emoji"
+end
+
 Config.font = Wezterm.font_with_fallback({
 	"Maple Mono NF",
+	{ family = emoji_font, assume_emoji_presentation = true },
 	"Maple Mono NF CN"
 })
 Config.font_size = 11.5
