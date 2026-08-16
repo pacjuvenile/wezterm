@@ -304,7 +304,7 @@ impl crate::TermWindow {
         };
 
         // Consider cursor
-        if !cursor_range.is_empty() {
+        if params.draw_cursor && !cursor_range.is_empty() {
             let (fg_color, bg_color) = if let Some(c) = &cursor_cell {
                 let attrs = c.attrs();
 

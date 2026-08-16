@@ -18,12 +18,14 @@ use wezterm_surface::{CursorShape, CursorVisibility, SequenceNo, SEQ_ZERO};
 #[derive(Debug)]
 struct LocalClip {
     clip: Mutex<Option<String>>,
+    requests: Mutex<Vec<(ClipboardSelection, char, String)>>,
 }
 
 impl LocalClip {
     fn new() -> Self {
         Self {
             clip: Mutex::new(None),
+            requests: Mutex::new(vec![]),
         }
     }
 }
@@ -37,15 +39,30 @@ impl Clipboard for LocalClip {
         *self.clip.lock().unwrap() = clip;
         Ok(())
     }
+
+    fn request_contents(
+        &self,
+        selection: ClipboardSelection,
+        selector: char,
+        terminator: &str,
+    ) -> anyhow::Result<()> {
+        self.requests
+            .lock()
+            .unwrap()
+            .push((selection, selector, terminator.to_owned()));
+        Ok(())
+    }
 }
 
 struct TestTerm {
     term: Terminal,
+    clip: Arc<LocalClip>,
 }
 
 #[derive(Debug)]
 struct TestTermConfig {
     scrollback: usize,
+    osc52: crate::config::Osc52,
 }
 impl TerminalConfiguration for TestTermConfig {
     fn scrollback_size(&self) -> usize {
@@ -59,10 +76,23 @@ impl TerminalConfiguration for TestTermConfig {
     fn enable_kitty_graphics(&self) -> bool {
         true
     }
+
+    fn osc52(&self) -> crate::config::Osc52 {
+        self.osc52
+    }
 }
 
 impl TestTerm {
     fn new(height: usize, width: usize, scrollback: usize) -> Self {
+        Self::new_with_osc52(height, width, scrollback, crate::config::Osc52::default())
+    }
+
+    fn new_with_osc52(
+        height: usize,
+        width: usize,
+        scrollback: usize,
+        osc52: crate::config::Osc52,
+    ) -> Self {
         let _ = env_logger::Builder::new()
             .is_test(true)
             .filter_level(log::LevelFilter::Trace)
@@ -76,15 +106,16 @@ impl TestTerm {
                 pixel_height: height * 16,
                 dpi: 0,
             },
-            Arc::new(TestTermConfig { scrollback }),
+            Arc::new(TestTermConfig { scrollback, osc52 }),
             "WezTerm",
             "O_o",
             Box::new(Vec::new()),
         );
-        let clip: Arc<dyn Clipboard> = Arc::new(LocalClip::new());
-        term.set_clipboard(&clip);
+        let clip = Arc::new(LocalClip::new());
+        let clipboard: Arc<dyn Clipboard> = clip.clone();
+        term.set_clipboard(&clipboard);
 
-        let mut term = Self { term };
+        let mut term = Self { term, clip };
 
         term.set_auto_wrap(true);
 
@@ -313,6 +344,39 @@ fn assert_all_contents(term: &Terminal, file: &str, line: u32, expect_lines: &[&
     let expect: Vec<Line> = expect_lines.iter().map(|s| (*s).into()).collect();
 
     assert_lines_equal(file, line, &screen.all_lines(), &expect, Compare::TEXT);
+}
+
+#[test]
+fn osc52_matches_alacritty_copy_and_paste_policy() {
+    use crate::config::Osc52;
+
+    let mut only_copy = TestTerm::new_with_osc52(2, 8, 0, Osc52::OnlyCopy);
+    only_copy.print("\x1b]52;c;aGVsbG8=\x07");
+    assert_eq!(
+        *only_copy.clip.clip.lock().unwrap(),
+        Some("hello".to_owned())
+    );
+    only_copy.print("\x1b]52;c;?\x07");
+    assert!(only_copy.clip.requests.lock().unwrap().is_empty());
+
+    let mut copy_paste = TestTerm::new_with_osc52(2, 8, 0, Osc52::CopyPaste);
+    copy_paste.print("\x1b]52;c;?\x07");
+    copy_paste.print("\x1b]52;s;?\x1b\\");
+    assert_eq!(
+        *copy_paste.clip.requests.lock().unwrap(),
+        vec![
+            (ClipboardSelection::Clipboard, 'c', "\x07".to_owned()),
+            (
+                ClipboardSelection::PrimarySelection,
+                's',
+                "\x1b\\".to_owned(),
+            ),
+        ]
+    );
+
+    let mut disabled = TestTerm::new_with_osc52(2, 8, 0, Osc52::Disabled);
+    disabled.print("\x1b]52;c;aGVsbG8=\x07");
+    assert_eq!(*disabled.clip.clip.lock().unwrap(), None);
 }
 
 #[test]

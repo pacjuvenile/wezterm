@@ -4,9 +4,11 @@ use crate::termwindow::TermWindowNotif;
 use crate::TermWindow;
 use ::window::*;
 use anyhow::{Context, Error};
+use base64::Engine;
 use config::keyassignment::{KeyAssignment, SpawnCommand};
 use config::{ConfigSubscription, NotificationHandling};
 use mux::client::ClientId;
+use mux::pane::PaneId;
 use mux::window::WindowId as MuxWindowId;
 use mux::{Mux, MuxNotification};
 use promise::{Future, Promise};
@@ -16,6 +18,11 @@ use std::rc::Rc;
 use std::sync::Arc;
 use wezterm_term::{Alert, ClipboardSelection};
 use wezterm_toast_notification::*;
+
+fn format_osc52_response(selector: char, text: &str, terminator: &str) -> String {
+    let encoded = base64::engine::general_purpose::STANDARD.encode(text.as_bytes());
+    format!("\x1b]52;{selector};{encoded}{terminator}")
+}
 
 pub struct GuiFrontEnd {
     connection: Rc<Connection>,
@@ -184,19 +191,88 @@ impl GuiFrontEnd {
                             selection,
                             clipboard
                         );
-                        if let Some(window) = fe.known_windows.borrow().keys().next() {
-                            window.set_clipboard(
-                                match selection {
-                                    ClipboardSelection::Clipboard => Clipboard::Clipboard,
-                                    ClipboardSelection::PrimarySelection => {
-                                        Clipboard::PrimarySelection
-                                    }
-                                },
-                                clipboard.unwrap_or_else(String::new),
-                            );
+                        if let Some(window) = fe.window_for_pane(pane_id) {
+                            let clipboard_window = window.clone();
+                            window.notify(TermWindowNotif::Apply(Box::new(move |term_window| {
+                                if term_window.focused.is_some() {
+                                    clipboard_window.set_clipboard(
+                                        match selection {
+                                            ClipboardSelection::Clipboard => Clipboard::Clipboard,
+                                            ClipboardSelection::PrimarySelection => {
+                                                Clipboard::PrimarySelection
+                                            }
+                                        },
+                                        clipboard.unwrap_or_default(),
+                                    );
+                                } else {
+                                    log::debug!("Denied OSC 52 store from an unfocused window");
+                                }
+                            })));
                         } else {
-                            log::error!("Cannot assign clipboard as there are no windows");
+                            log::error!("Cannot assign clipboard: pane {pane_id} is not visible");
                         };
+                    })
+                    .detach();
+                }
+                MuxNotification::RequestClipboard {
+                    pane_id,
+                    selection,
+                    selector,
+                    terminator,
+                } => {
+                    promise::spawn::spawn_into_main_thread(async move {
+                        let fe = crate::frontend::front_end();
+                        let Some(window) = fe.window_for_pane(pane_id) else {
+                            log::error!("Cannot read clipboard: pane {pane_id} is not visible");
+                            return;
+                        };
+                        let notify_window = window.clone();
+                        window.notify(TermWindowNotif::Apply(Box::new(move |term_window| {
+                            if term_window.focused.is_none() {
+                                log::debug!("Denied OSC 52 load from an unfocused window");
+                                return;
+                            }
+
+                            let clipboard = match selection {
+                                ClipboardSelection::Clipboard => Clipboard::Clipboard,
+                                ClipboardSelection::PrimarySelection => Clipboard::PrimarySelection,
+                            };
+                            let future = notify_window.get_clipboard(clipboard);
+                            let completion_window = notify_window.clone();
+                            promise::spawn::spawn(async move {
+                                match future.await {
+                                    Ok(text) => {
+                                        let response =
+                                            format_osc52_response(selector, &text, &terminator);
+                                        completion_window.notify(TermWindowNotif::Apply(Box::new(
+                                            move |term_window| {
+                                                if term_window.focused.is_none() {
+                                                    log::debug!(
+                                                        "Denied OSC 52 load after focus changed"
+                                                    );
+                                                    return;
+                                                }
+                                                if let Some(pane) = Mux::get().get_pane(pane_id) {
+                                                    let mut writer = pane.writer();
+                                                    if let Err(err) = writer
+                                                        .write_all(response.as_bytes())
+                                                        .and_then(|_| writer.flush())
+                                                    {
+                                                        log::error!(
+                                                            "Failed to answer OSC 52 query: {err:#}"
+                                                        );
+                                                    }
+                                                }
+                                            },
+                                        )));
+                                    }
+                                    Err(err) => {
+                                        log::error!("Failed to read clipboard for OSC 52: {err:#}");
+                                    }
+                                }
+                            })
+                            .detach();
+                        })));
                     })
                     .detach();
                 }
@@ -318,6 +394,19 @@ impl GuiFrontEnd {
                 }
             }
         }
+    }
+
+    fn window_for_pane(&self, pane_id: PaneId) -> Option<Window> {
+        let mux = Mux::get();
+        self.known_windows
+            .borrow()
+            .iter()
+            .find(|(_, mux_window_id)| {
+                mux.get_active_tab_for_window(**mux_window_id)
+                    .map(|tab| tab.contains_pane(pane_id))
+                    .unwrap_or(false)
+            })
+            .map(|(window, _)| window.clone())
     }
 
     pub fn run_forever(&self) -> anyhow::Result<()> {
@@ -546,4 +635,21 @@ pub fn try_new() -> Result<Rc<GuiFrontEnd>, Error> {
         .replace(config_subscription);
 
     Ok(front_end)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::format_osc52_response;
+
+    #[test]
+    fn osc52_response_preserves_selector_and_terminator() {
+        assert_eq!(
+            format_osc52_response('c', "hello", "\x07"),
+            "\x1b]52;c;aGVsbG8=\x07"
+        );
+        assert_eq!(
+            format_osc52_response('s', "hello", "\x1b\\"),
+            "\x1b]52;s;aGVsbG8=\x1b\\"
+        );
+    }
 }

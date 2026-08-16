@@ -87,6 +87,12 @@ pub struct Config {
     #[dynamic(default)]
     pub log_unknown_escape_sequences: bool,
 
+    /// Controls OSC 52 clipboard reads and writes. Clipboard reads can expose
+    /// local data to applications running in the terminal, so they are not
+    /// enabled by default.
+    #[dynamic(default)]
+    pub osc52: wezterm_term::config::Osc52,
+
     #[dynamic(default)]
     pub integrated_title_button_alignment: IntegratedTitleButtonAlignment,
 
@@ -648,6 +654,18 @@ pub struct Config {
     pub cursor_blink_ease_in: EasingFunction,
     #[dynamic(default = "linear_ease")]
     pub cursor_blink_ease_out: EasingFunction,
+
+    /// Enables Neovide-style cursor movement animation.
+    #[dynamic(default)]
+    pub cursor_animation_enabled: bool,
+    /// Neovide-style critically damped cursor animation duration. Set this to
+    /// zero to use the regular immediate WezTerm cursor.
+    #[dynamic(default = "default_cursor_animation_length_ms")]
+    pub cursor_animation_length_ms: u64,
+    #[dynamic(default = "default_cursor_animation_short_length_ms")]
+    pub cursor_animation_short_length_ms: u64,
+    #[dynamic(default = "default_cursor_trail_size")]
+    pub cursor_trail_size: f32,
 
     #[dynamic(default = "default_anim_fps")]
     pub animation_fps: u8,
@@ -1680,6 +1698,18 @@ fn default_ratelimit_line_prefetches_per_second() -> u32 {
 
 fn default_cursor_blink_rate() -> u64 {
     800
+}
+
+fn default_cursor_animation_length_ms() -> u64 {
+    150
+}
+
+fn default_cursor_animation_short_length_ms() -> u64 {
+    40
+}
+
+fn default_cursor_trail_size() -> f32 {
+    1.0
 }
 
 fn default_text_blink_rate() -> u64 {

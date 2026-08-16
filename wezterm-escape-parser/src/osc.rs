@@ -38,7 +38,7 @@ pub enum OperatingSystemCommand {
     SetIconNameSun(String),
     SetHyperlink(Option<Hyperlink>),
     ClearSelection(Selection),
-    QuerySelection(Selection),
+    QuerySelection(Selection, OscTerminator),
     SetSelection(Selection, String),
     SystemNotification(String),
     ITermProprietary(ITermProprietary),
@@ -52,6 +52,21 @@ pub enum OperatingSystemCommand {
     ConEmuProgress(Progress),
 
     Unspecified(Vec<Vec<u8>>),
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum OscTerminator {
+    Bell,
+    StringTerminator,
+}
+
+impl OscTerminator {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Bell => "\x07",
+            Self::StringTerminator => "\x1b\\",
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, FromPrimitive)]
@@ -153,7 +168,16 @@ impl Display for Selection {
 
 impl OperatingSystemCommand {
     pub fn parse(osc: &[&[u8]]) -> Self {
-        Self::internal_parse(osc).unwrap_or_else(|err| {
+        Self::parse_with_terminator(osc, 0x1b)
+    }
+
+    pub fn parse_with_terminator(osc: &[&[u8]], terminator: u8) -> Self {
+        let terminator = if terminator == 0x07 {
+            OscTerminator::Bell
+        } else {
+            OscTerminator::StringTerminator
+        };
+        Self::internal_parse(osc, terminator).unwrap_or_else(|err| {
             let mut vec = Vec::new();
             for slice in osc {
                 vec.push(slice.to_vec());
@@ -167,11 +191,12 @@ impl OperatingSystemCommand {
         })
     }
 
-    fn parse_selection(osc: &[&[u8]]) -> Result<Self> {
+    fn parse_selection(osc: &[&[u8]], terminator: OscTerminator) -> Result<Self> {
         if osc.len() == 2 {
             Selection::try_parse(osc[1]).map(OperatingSystemCommand::ClearSelection)
         } else if osc.len() == 3 && osc[2] == b"?" {
-            Selection::try_parse(osc[1]).map(OperatingSystemCommand::QuerySelection)
+            Selection::try_parse(osc[1])
+                .map(|selection| OperatingSystemCommand::QuerySelection(selection, terminator))
         } else if osc.len() == 3 {
             let sel = Selection::try_parse(osc[1])?;
             let bytes = base64_decode(osc[2])?;
@@ -253,7 +278,7 @@ impl OperatingSystemCommand {
         ))
     }
 
-    fn internal_parse(osc: &[&[u8]]) -> Result<Self> {
+    fn internal_parse(osc: &[&[u8]], terminator: OscTerminator) -> Result<Self> {
         ensure!(!osc.is_empty(), "no params");
         let p1str = String::from_utf8_lossy(osc[0]);
 
@@ -314,7 +339,7 @@ impl OperatingSystemCommand {
                 p1str[1..].to_owned(),
             )),
             SetHyperlink => Ok(OperatingSystemCommand::SetHyperlink(Hyperlink::parse(osc)?)),
-            ManipulateSelectionData => Self::parse_selection(osc),
+            ManipulateSelectionData => Self::parse_selection(osc, terminator),
             SystemNotification => {
                 if osc.len() >= 3 && osc[1] == b"4" {
                     fn get_pct(v: &&[u8]) -> u8 {
@@ -578,7 +603,7 @@ impl Display for OperatingSystemCommand {
                 }
             }
             ClearSelection(s) => write!(f, "52;{}", s)?,
-            QuerySelection(s) => write!(f, "52;{};?", s)?,
+            QuerySelection(s, _) => write!(f, "52;{};?", s)?,
             SetSelection(s, val) => write!(f, "52;{};{}", s, base64_encode(val))?,
             SystemNotification(s) => write!(f, "9;{}", s)?,
             ITermProprietary(i) => i.fmt(f)?,

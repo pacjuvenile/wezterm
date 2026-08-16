@@ -314,8 +314,8 @@ impl<'a, F: FnMut(Action)> VTActor for Performer<'a, F> {
         }
     }
 
-    fn osc_dispatch(&mut self, osc: &[&[u8]]) {
-        let osc = OperatingSystemCommand::parse(osc);
+    fn osc_dispatch(&mut self, osc: &[&[u8]], terminator: u8) {
+        let osc = OperatingSystemCommand::parse_with_terminator(osc, terminator);
         (self.callback)(Action::OperatingSystemCommand(Box::new(osc)));
     }
 

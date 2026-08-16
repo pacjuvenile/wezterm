@@ -786,15 +786,41 @@ impl<'a> Performer<'a> {
             }
 
             OperatingSystemCommand::ClearSelection(selection) => {
-                let selection = selection_to_selection(selection);
-                self.set_clipboard_contents(selection, None).ok();
+                if self.config.osc52().allows_copy() {
+                    if let Some((selection, _)) = osc52_selection(selection) {
+                        self.set_clipboard_contents(selection, None).ok();
+                    }
+                } else {
+                    debug!("Denied OSC 52 clipboard store");
+                }
             }
-            OperatingSystemCommand::QuerySelection(_) => {}
+            OperatingSystemCommand::QuerySelection(selection, terminator) => {
+                if self.config.osc52().allows_paste() {
+                    if let Some((selection, selector)) = osc52_selection(selection) {
+                        if let Err(err) = self.request_clipboard_contents(
+                            selection,
+                            selector,
+                            terminator.as_str(),
+                        ) {
+                            error!("failed to read clipboard in response to OSC 52: {err:#}");
+                        }
+                    }
+                } else {
+                    debug!("Denied OSC 52 clipboard load");
+                }
+            }
             OperatingSystemCommand::SetSelection(selection, selection_data) => {
-                let selection = selection_to_selection(selection);
-                match self.set_clipboard_contents(selection, Some(selection_data)) {
-                    Ok(_) => (),
-                    Err(err) => error!("failed to set clipboard in response to OSC 52: {:#?}", err),
+                if self.config.osc52().allows_copy() {
+                    if let Some((selection, _)) = osc52_selection(selection) {
+                        match self.set_clipboard_contents(selection, Some(selection_data)) {
+                            Ok(_) => (),
+                            Err(err) => {
+                                error!("failed to set clipboard in response to OSC 52: {err:#}")
+                            }
+                        }
+                    }
+                } else {
+                    debug!("Denied OSC 52 clipboard store");
                 }
             }
             OperatingSystemCommand::ITermProprietary(iterm) => match iterm {
@@ -1099,15 +1125,11 @@ impl<'a> Performer<'a> {
     }
 }
 
-fn selection_to_selection(sel: Selection) -> ClipboardSelection {
+fn osc52_selection(sel: Selection) -> Option<(ClipboardSelection, char)> {
     match sel {
-        Selection::CLIPBOARD => ClipboardSelection::Clipboard,
-        Selection::PRIMARY => ClipboardSelection::PrimarySelection,
-        // xterm will use a configurable selection in the NONE case
-        Selection::NONE => ClipboardSelection::Clipboard,
-        // otherwise we just use clipboard.  Could potentially
-        // also use the same fallback configuration as NONE,
-        // if/when we add it
-        _ => ClipboardSelection::Clipboard,
+        Selection::CLIPBOARD => Some((ClipboardSelection::Clipboard, 'c')),
+        Selection::PRIMARY => Some((ClipboardSelection::PrimarySelection, 'p')),
+        Selection::SELECT => Some((ClipboardSelection::PrimarySelection, 's')),
+        _ => None,
     }
 }

@@ -1,9 +1,12 @@
-use crate::quad::{HeapQuadAllocator, QuadTrait, TripleLayerQuadAllocator};
+use crate::quad::{
+    HeapQuadAllocator, QuadTrait, TripleLayerQuadAllocator, TripleLayerQuadAllocatorTrait,
+};
 use crate::selection::SelectionRange;
 use crate::termwindow::box_model::*;
+use crate::termwindow::cursor_animation::{CursorAnimationSettings, CursorRect};
 use crate::termwindow::render::{
-    same_hyperlink, CursorProperties, LineQuadCacheKey, LineQuadCacheValue, LineToEleShapeCacheKey,
-    RenderScreenLineParams,
+    same_hyperlink, ComputeCellFgBgParams, CursorProperties, LineQuadCacheKey, LineQuadCacheValue,
+    LineToEleShapeCacheKey, RenderScreenLineParams,
 };
 use crate::termwindow::{ScrollHit, UIItem, UIItemType};
 use ::window::bitmaps::TextureRect;
@@ -15,6 +18,8 @@ use mux::renderable::{RenderableDimensions, StableCursorPosition};
 use mux::tab::PositionedPane;
 use ordered_float::NotNan;
 use std::time::Instant;
+use termwiz::surface::CursorShape;
+use wezterm_bidi::Direction;
 use wezterm_dynamic::Value;
 use wezterm_term::color::{ColorAttribute, ColorPalette};
 use wezterm_term::{Line, StableRowIndex};
@@ -302,7 +307,7 @@ impl crate::TermWindow {
         let cursor_is_default_color =
             palette.cursor_fg == global_cursor_fg && palette.cursor_bg == global_cursor_bg;
 
-        {
+        let cursor_info = {
             let stable_range = match current_viewport {
                 Some(top) => top..top + dims.viewport_rows as StableRowIndex,
                 None => dims.physical_top..dims.physical_top + dims.viewport_rows as StableRowIndex,
@@ -335,6 +340,7 @@ impl crate::TermWindow {
                 window_is_transparent: bool,
                 layers: &'a mut TripleLayerQuadAllocator<'b>,
                 error: Option<anyhow::Error>,
+                cursor_info: Option<(usize, usize, bool)>,
             }
 
             let left_pixel_x = padding_left
@@ -365,6 +371,7 @@ impl crate::TermWindow {
                 window_is_transparent,
                 layers,
                 error: None,
+                cursor_info: None,
             };
 
             impl<'a, 'b> LineRender<'a, 'b> {
@@ -421,7 +428,27 @@ impl crate::TermWindow {
                         (None, None, false)
                     };
 
+                    if self.cursor.y == stable_row {
+                        let (_, direction) = line.bidi_info();
+                        let physical_x = match direction.direction() {
+                            Direction::LeftToRight => self.cursor.x,
+                            Direction::RightToLeft => self.dims.cols - self.cursor.x,
+                        };
+                        let width = line
+                            .get_cell(self.cursor.x)
+                            .map(|cell| cell.width())
+                            .unwrap_or(1);
+                        self.cursor_info =
+                            Some((physical_x, width, !password_input && line.is_single_width()));
+                    }
+
                     let shape_hash = self.term_window.shape_hash_for_line(line);
+                    let draw_cursor = !self.term_window.config.cursor_animation_enabled
+                        || self.term_window.config.cursor_animation_length_ms == 0
+                        || !self.pos.is_active
+                        || self.term_window.focused.is_none()
+                        || password_input
+                        || !line.is_single_width();
 
                     let quad_key = LineQuadCacheKey {
                         pane_id: self.pane_id,
@@ -440,6 +467,7 @@ impl crate::TermWindow {
                         left_pixel_x: NotNan::new(self.left_pixel_x).unwrap(),
                         phys_line_idx: line_idx,
                         reverse_video: self.dims.reverse_video,
+                        draw_cursor,
                     };
 
                     if let Some(cached_quad) =
@@ -523,6 +551,7 @@ impl crate::TermWindow {
                                 render_metrics: self.term_window.render_metrics,
                                 shape_key: Some(shape_key),
                                 password_input,
+                                draw_cursor,
                             },
                             &mut TripleLayerQuadAllocator::Heap(&mut buf),
                         )
@@ -569,6 +598,105 @@ impl crate::TermWindow {
             if let Some(error) = render.error.take() {
                 return Err(error).context("error while calling with_lines_mut");
             }
+            render.cursor_info
+        };
+
+        let animate_cursor = pos.is_active
+            && self.focused.is_some()
+            && config.cursor_animation_enabled
+            && config.cursor_animation_length_ms > 0
+            && cursor_info.is_some_and(|(_, _, can_animate)| can_animate);
+        if animate_cursor {
+            let (cursor_x, cursor_width, _) = cursor_info.unwrap();
+            let stable_top = current_viewport.unwrap_or(dims.physical_top);
+            let cursor_row = cursor.y - stable_top;
+            if cursor_row >= 0 && cursor_row < dims.viewport_rows as StableRowIndex {
+                let left_pixel_x =
+                    padding_left + border.left.get() as f32 + (pos.left as f32 * cell_width);
+                let mut cursor_rect = CursorRect {
+                    x: left_pixel_x + cursor_x as f32 * cell_width,
+                    y: top_pixel_y + (pos.top as f32 + cursor_row as f32) * cell_height,
+                    width: cell_width * cursor_width as f32,
+                    height: cell_height,
+                };
+
+                let cursor_result = self.compute_cell_fg_bg(ComputeCellFgBgParams {
+                    cursor: Some(&cursor),
+                    selected: false,
+                    fg_color: foreground,
+                    bg_color: default_bg,
+                    is_active_pane: true,
+                    config: &config,
+                    selection_fg,
+                    selection_bg,
+                    cursor_fg,
+                    cursor_bg,
+                    cursor_is_default_color,
+                    cursor_border_color,
+                    pane: Some(&pos.pane),
+                });
+
+                if let Some(shape) = cursor_result.cursor_shape {
+                    let thickness = (self.render_metrics.underline_height as f32).max(1.0);
+                    let cursor_layer = match shape {
+                        CursorShape::BlinkingBar | CursorShape::SteadyBar => {
+                            cursor_rect.width = thickness.min(cursor_rect.width);
+                            2
+                        }
+                        CursorShape::BlinkingUnderline | CursorShape::SteadyUnderline => {
+                            cursor_rect.y += cursor_rect.height - thickness.min(cursor_rect.height);
+                            cursor_rect.height = thickness.min(cursor_rect.height);
+                            0
+                        }
+                        CursorShape::Default
+                        | CursorShape::BlinkingBlock
+                        | CursorShape::SteadyBlock => 0,
+                    };
+
+                    let settings = CursorAnimationSettings {
+                        animation_length: config.cursor_animation_length_ms as f32 / 1000.0,
+                        short_animation_length: config.cursor_animation_short_length_ms as f32
+                            / 1000.0,
+                        trail_size: config.cursor_trail_size,
+                    };
+                    let now = Instant::now();
+                    let (corners, animating) = self.pane_state(pane_id).cursor_animation.update(
+                        now,
+                        cursor_rect,
+                        settings,
+                    );
+
+                    if animating {
+                        let frame_interval = 1.0 / config.animation_fps.max(1) as f32;
+                        self.update_next_frame_time(Some(
+                            now + std::time::Duration::from_secs_f32(frame_interval),
+                        ));
+                    }
+
+                    let left_offset = self.dimensions.pixel_width as f32 / 2.0;
+                    let top_offset = self.dimensions.pixel_height as f32 / 2.0;
+                    let corners =
+                        corners.map(|point| [point.x - left_offset, point.y - top_offset]);
+                    let mut quad = layers
+                        .allocate(cursor_layer)
+                        .with_context(|| format!("layers.allocate({cursor_layer})"))?;
+                    quad.set_corners(corners);
+                    quad.set_texture(filled_box);
+                    quad.set_is_background();
+                    quad.set_fg_color(cursor_result.cursor_border_color);
+                    quad.set_alt_color_and_mix_value(
+                        cursor_result.cursor_border_color_alt,
+                        cursor_result.cursor_border_mix,
+                    );
+                    quad.set_hsv(None);
+                } else {
+                    self.pane_state(pane_id).cursor_animation.reset();
+                }
+            } else {
+                self.pane_state(pane_id).cursor_animation.reset();
+            }
+        } else {
+            self.pane_state(pane_id).cursor_animation.reset();
         }
 
         /*

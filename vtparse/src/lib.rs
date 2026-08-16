@@ -175,7 +175,9 @@ pub trait VTActor {
     /// `params` is an array of byte strings (which may also be valid utf-8)
     /// that were passed as semicolon separated parameters to the operating
     /// system command.
-    fn osc_dispatch(&mut self, params: &[&[u8]]);
+    /// `terminator` is the byte that ended the OSC string. It is BEL for
+    /// BEL-terminated OSC strings and ESC for the common two-byte ST form.
+    fn osc_dispatch(&mut self, params: &[&[u8]], terminator: u8);
 
     /// Called when an APC string is terminated by ST
     /// `data` is the data contained within the APC sequence.
@@ -297,7 +299,7 @@ impl VTActor for CollectingVTActor {
         });
     }
 
-    fn osc_dispatch(&mut self, params: &[&[u8]]) {
+    fn osc_dispatch(&mut self, params: &[&[u8]], _terminator: u8) {
         self.actions.push(VTAction::OscDispatch(
             params.iter().map(|i| i.to_vec()).collect(),
         ));
@@ -620,7 +622,7 @@ impl VTParser {
 
             Action::OscEnd => {
                 if self.osc.num_params == 0 {
-                    actor.osc_dispatch(&[]);
+                    actor.osc_dispatch(&[], param);
                 } else {
                     let mut params: [&[u8]; MAX_OSC] = [b""; MAX_OSC];
                     let mut offset = 0usize;
@@ -634,7 +636,7 @@ impl VTParser {
                         offset = self.osc.param_indices[i];
                     }
                     params[limit - 1] = slice;
-                    actor.osc_dispatch(&params[0..limit]);
+                    actor.osc_dispatch(&params[0..limit], param);
                 }
             }
 
@@ -698,7 +700,7 @@ impl VTParser {
                 if action == Action::Execute
                     || (state != self.utf8_return_state && state != State::Utf8Sequence)
                 {
-                    self.action(lookup_exit(self.utf8_return_state), 0, actor);
+                    self.action(lookup_exit(self.utf8_return_state), byte, actor);
                     self.action(action, byte, actor);
                     self.action(lookup_entry(state), 0, actor);
                     self.utf8_return_state = self.state;
@@ -733,7 +735,7 @@ impl VTParser {
 
         if state != self.state {
             if state != State::Utf8Sequence {
-                self.action(lookup_exit(self.state), 0, actor);
+                self.action(lookup_exit(self.state), byte, actor);
             }
             self.action(action, byte, actor);
             self.action(lookup_entry(state), byte, actor);

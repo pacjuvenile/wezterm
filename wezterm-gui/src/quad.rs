@@ -105,6 +105,7 @@ pub trait QuadTrait {
 
     fn set_hsv(&mut self, hsv: Option<HsbTransform>);
     fn set_position(&mut self, left: f32, top: f32, right: f32, bottom: f32);
+    fn set_corners(&mut self, corners: [[f32; 2]; VERTICES_PER_CELL]);
 }
 
 pub enum QuadImpl<'a> {
@@ -152,6 +153,13 @@ impl<'a> QuadTrait for QuadImpl<'a> {
         match self {
             Self::Vert(q) => q.set_position(left, top, right, bottom),
             Self::Boxed(q) => q.set_position(left, top, right, bottom),
+        }
+    }
+
+    fn set_corners(&mut self, corners: [[f32; 2]; VERTICES_PER_CELL]) {
+        match self {
+            Self::Vert(q) => q.set_corners(corners),
+            Self::Boxed(q) => q.set_corners(corners),
         }
     }
 }
@@ -204,6 +212,12 @@ impl<'a> QuadTrait for Quad<'a> {
         self.vert[V_TOP_RIGHT].position = [right, top];
         self.vert[V_BOT_LEFT].position = [left, bottom];
         self.vert[V_BOT_RIGHT].position = [right, bottom];
+    }
+
+    fn set_corners(&mut self, corners: [[f32; 2]; VERTICES_PER_CELL]) {
+        for (vertex, position) in self.vert.iter_mut().zip(corners) {
+            vertex.position = position;
+        }
     }
 }
 
@@ -258,6 +272,26 @@ impl QuadTrait for BoxedQuad {
 
     fn set_position(&mut self, left: f32, top: f32, right: f32, bottom: f32) {
         self.position = (left, top, right, bottom);
+    }
+
+    fn set_corners(&mut self, corners: [[f32; 2]; VERTICES_PER_CELL]) {
+        let left = corners
+            .iter()
+            .map(|point| point[0])
+            .fold(f32::INFINITY, f32::min);
+        let top = corners
+            .iter()
+            .map(|point| point[1])
+            .fold(f32::INFINITY, f32::min);
+        let right = corners
+            .iter()
+            .map(|point| point[0])
+            .fold(f32::NEG_INFINITY, f32::max);
+        let bottom = corners
+            .iter()
+            .map(|point| point[1])
+            .fold(f32::NEG_INFINITY, f32::max);
+        self.set_position(left, top, right, bottom);
     }
 }
 

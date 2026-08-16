@@ -441,7 +441,7 @@ macro_rules! pdu {
 /// The overall version of the codec.
 /// This must be bumped when backwards incompatible changes
 /// are made to the types and protocol.
-pub const CODEC_VERSION: usize = 45;
+pub const CODEC_VERSION: usize = 46;
 
 // Defines the Pdu enum.
 // Each struct has an explicit identifying number.
@@ -502,6 +502,7 @@ pdu! {
     GetPaneDirection: 60,
     GetPaneDirectionResponse: 61,
     AdjustPaneSize: 62,
+    RequestClipboard: 63,
 }
 
 impl Pdu {
@@ -594,6 +595,7 @@ impl Pdu {
             | Pdu::SetPalette(SetPalette { pane_id, .. })
             | Pdu::NotifyAlert(NotifyAlert { pane_id, .. })
             | Pdu::SetClipboard(SetClipboard { pane_id, .. })
+            | Pdu::RequestClipboard(RequestClipboard { pane_id, .. })
             | Pdu::PaneFocused(PaneFocused { pane_id })
             | Pdu::PaneRemoved(PaneRemoved { pane_id }) => Some(*pane_id),
             _ => None,
@@ -767,6 +769,14 @@ pub struct SetClipboard {
     pub pane_id: PaneId,
     pub clipboard: Option<String>,
     pub selection: ClipboardSelection,
+}
+
+#[derive(Deserialize, Serialize, PartialEq, Debug)]
+pub struct RequestClipboard {
+    pub pane_id: PaneId,
+    pub selection: ClipboardSelection,
+    pub selector: char,
+    pub terminator: String,
 }
 
 #[derive(Deserialize, Serialize, PartialEq, Debug)]

@@ -168,6 +168,25 @@ impl ClientPane {
                     log::error!("ClientPane: Ignoring SetClipboard request {:?}", clipboard);
                 }
             },
+            Pdu::RequestClipboard(RequestClipboard {
+                selection,
+                selector,
+                terminator,
+                ..
+            }) => match self.clipboard.lock().as_ref() {
+                Some(clip) => {
+                    log::debug!(
+                        "Pdu::RequestClipboard pane={} remote={} {:?}",
+                        self.local_pane_id,
+                        self.remote_pane_id,
+                        selection,
+                    );
+                    clip.request_contents(selection, selector, &terminator)?;
+                }
+                None => {
+                    log::error!("ClientPane: Ignoring RequestClipboard request");
+                }
+            },
             Pdu::SetPalette(SetPalette { palette, .. }) => {
                 *self.application_palette.lock() = palette != *self.configured_palette.lock();
 

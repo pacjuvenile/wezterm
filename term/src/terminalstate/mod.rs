@@ -715,6 +715,18 @@ impl TerminalState {
         Ok(())
     }
 
+    fn request_clipboard_contents(
+        &self,
+        selection: ClipboardSelection,
+        selector: char,
+        terminator: &str,
+    ) -> anyhow::Result<()> {
+        if let Some(clip) = self.clipboard.as_ref() {
+            clip.request_contents(selection, selector, terminator)?;
+        }
+        Ok(())
+    }
+
     pub fn erase_scrollback_and_viewport(&mut self) {
         // Since we may be called outside of perform_actions,
         // we need to ensure that we increment the seqno in

@@ -2,7 +2,29 @@ use crate::color::ColorPalette;
 use downcast_rs::{impl_downcast, Downcast};
 use wezterm_bidi::ParagraphDirectionHint;
 use wezterm_cell::UnicodeVersion;
+use wezterm_dynamic::{FromDynamic, ToDynamic};
 use wezterm_surface::{Line, SequenceNo};
+
+/// Controls which OSC 52 clipboard operations are accepted.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, FromDynamic, ToDynamic)]
+#[cfg_attr(feature = "use_serde", derive(serde::Serialize, serde::Deserialize))]
+pub enum Osc52 {
+    Disabled,
+    #[default]
+    OnlyCopy,
+    OnlyPaste,
+    CopyPaste,
+}
+
+impl Osc52 {
+    pub fn allows_copy(self) -> bool {
+        matches!(self, Self::OnlyCopy | Self::CopyPaste)
+    }
+
+    pub fn allows_paste(self) -> bool {
+        matches!(self, Self::OnlyPaste | Self::CopyPaste)
+    }
+}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum NewlineCanon {
@@ -226,6 +248,10 @@ pub trait TerminalConfiguration: Downcast + std::fmt::Debug + Send + Sync {
 
     fn log_unknown_escape_sequences(&self) -> bool {
         false
+    }
+
+    fn osc52(&self) -> Osc52 {
+        Osc52::default()
     }
 }
 impl_downcast!(TerminalConfiguration);

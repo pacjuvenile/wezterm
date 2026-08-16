@@ -73,6 +73,12 @@ pub enum MuxNotification {
         selection: ClipboardSelection,
         clipboard: Option<String>,
     },
+    RequestClipboard {
+        pane_id: PaneId,
+        selection: ClipboardSelection,
+        selector: char,
+        terminator: String,
+    },
     SaveToDownloads {
         name: Option<String>,
         data: Arc<Vec<u8>>,
@@ -1456,6 +1462,23 @@ impl Clipboard for MuxClipboard {
             pane_id: self.pane_id,
             selection,
             clipboard,
+        });
+        Ok(())
+    }
+
+    fn request_contents(
+        &self,
+        selection: ClipboardSelection,
+        selector: char,
+        terminator: &str,
+    ) -> anyhow::Result<()> {
+        let mux = Mux::try_get()
+            .ok_or_else(|| anyhow::anyhow!("MuxClipboard::request_contents: no Mux?"))?;
+        mux.notify(MuxNotification::RequestClipboard {
+            pane_id: self.pane_id,
+            selection,
+            selector,
+            terminator: terminator.to_owned(),
         });
         Ok(())
     }

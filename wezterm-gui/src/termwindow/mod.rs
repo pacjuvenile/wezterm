@@ -72,6 +72,7 @@ pub mod background;
 pub mod box_model;
 pub mod charselect;
 pub mod clipboard;
+mod cursor_animation;
 pub mod keyevent;
 pub mod modal;
 mod mouseevent;
@@ -204,6 +205,7 @@ pub struct PaneState {
 
     bell_start: Option<Instant>,
     pub mouse_terminal_coords: Option<(ClickPosition, StableRowIndex)>,
+    cursor_animation: cursor_animation::CursorAnimation,
 }
 
 /// Data used when synchronously formatting pane and window titles
@@ -1295,7 +1297,8 @@ impl TermWindow {
                 MuxNotification::WindowRemoved(_window_id) => {
                     // Handled by frontend
                 }
-                MuxNotification::AssignClipboard { .. } => {
+                MuxNotification::AssignClipboard { .. }
+                | MuxNotification::RequestClipboard { .. } => {
                     // Handled by frontend
                 }
                 MuxNotification::SaveToDownloads { .. } => {
@@ -1519,6 +1522,7 @@ impl TermWindow {
                 ..
             }
             | MuxNotification::AssignClipboard { .. }
+            | MuxNotification::RequestClipboard { .. }
             | MuxNotification::SaveToDownloads { .. }
             | MuxNotification::WindowCreated(_)
             | MuxNotification::ActiveWorkspaceChanged(_)

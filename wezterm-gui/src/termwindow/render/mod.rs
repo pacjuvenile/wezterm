@@ -72,6 +72,7 @@ pub struct LineQuadCacheKey {
     pub cursor: Option<CursorProperties>,
     pub reverse_video: bool,
     pub password_input: bool,
+    pub draw_cursor: bool,
 }
 
 pub struct LineQuadCacheValue {
@@ -168,6 +169,7 @@ pub struct RenderScreenLineParams<'a> {
     pub render_metrics: RenderMetrics,
     pub shape_key: Option<LineToEleShapeCacheKey>,
     pub password_input: bool,
+    pub draw_cursor: bool,
 }
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone)]

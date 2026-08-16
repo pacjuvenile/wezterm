@@ -117,6 +117,10 @@ impl wezterm_term::TerminalConfiguration for TermConfig {
         self.configuration().log_unknown_escape_sequences
     }
 
+    fn osc52(&self) -> wezterm_term::config::Osc52 {
+        self.configuration().osc52
+    }
+
     fn normalize_output_to_unicode_nfc(&self) -> bool {
         self.configuration().normalize_output_to_unicode_nfc
     }
