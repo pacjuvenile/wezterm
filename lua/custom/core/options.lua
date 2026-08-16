@@ -50,6 +50,6 @@ Config.osc52 = 'CopyPaste'
 
 -- cursor animation
 Config.cursor_animation_enabled = true
-Config.cursor_animation_length_ms = 150
-Config.cursor_animation_short_length_ms = 40
+Config.cursor_animation_length_ms = 100
+Config.cursor_animation_short_length_ms = 25
 Config.cursor_trail_size = 1.0
