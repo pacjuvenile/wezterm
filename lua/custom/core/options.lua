@@ -26,7 +26,6 @@ Config.default_gui_startup_args = { "start", "--position", "130,110" }
 Config.default_domain = 'WSL:NixOS'
 Config.default_prog = { "wsl" }
 
--- appearance
 -- window
 Config.initial_cols = 120
 Config.initial_rows = 27
@@ -45,3 +44,12 @@ Config.window_padding = {
 -- opacity
 Config.window_background_opacity = 0.85
 Config.text_background_opacity = 1.0
+
+-- osc52
+Config.osc52 = 'CopyPaste'
+
+-- cursor animation
+Config.cursor_animation_enabled = true
+Config.cursor_animation_length_ms = 150
+Config.cursor_animation_short_length_ms = 40
+Config.cursor_trail_size = 1.0
