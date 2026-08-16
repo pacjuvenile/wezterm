@@ -22,9 +22,11 @@ Config.line_height = 1.2
 Config.color_scheme = "Catppuccin Macchiato" -- Catppuccin Latte/Frappe/Macchiato/Mocha
 
 -- startup
-Config.default_gui_startup_args = { "start", "--position", "130,110" }
-Config.default_domain = 'WSL:NixOS'
-Config.default_prog = { "wsl" }
+if Wezterm.target_triple:find('windows') then
+	Config.default_gui_startup_args = { "start", "--position", "130,110" }
+	Config.default_domain = 'WSL:NixOS'
+	Config.default_prog = { "wsl" }
+end
 
 -- window
 Config.initial_cols = 120
