@@ -1126,6 +1126,13 @@ impl<'a> Performer<'a> {
 }
 
 fn osc52_selection(sel: Selection) -> Option<(ClipboardSelection, char)> {
+    // An omitted selector is parsed as xterm's default `s0`. Alacritty treats
+    // the same empty field as `c`, which is also what tmux expects when it
+    // queries the host terminal with OSC 52;;?.
+    if sel == Selection::SELECT | Selection::CUT0 {
+        return Some((ClipboardSelection::Clipboard, 'c'));
+    }
+
     match sel {
         Selection::CLIPBOARD => Some((ClipboardSelection::Clipboard, 'c')),
         Selection::PRIMARY => Some((ClipboardSelection::PrimarySelection, 'p')),

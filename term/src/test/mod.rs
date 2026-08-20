@@ -380,6 +380,25 @@ fn osc52_matches_alacritty_copy_and_paste_policy() {
 }
 
 #[test]
+fn osc52_empty_selection_uses_system_clipboard_for_tmux() {
+    use crate::config::Osc52;
+
+    let mut only_copy = TestTerm::new_with_osc52(2, 8, 0, Osc52::OnlyCopy);
+    only_copy.print("\x1b]52;;dG11eA==\x07");
+    assert_eq!(
+        *only_copy.clip.clip.lock().unwrap(),
+        Some("tmux".to_owned())
+    );
+
+    let mut copy_paste = TestTerm::new_with_osc52(2, 8, 0, Osc52::CopyPaste);
+    copy_paste.print("\x1b]52;;?\x07");
+    assert_eq!(
+        *copy_paste.clip.requests.lock().unwrap(),
+        vec![(ClipboardSelection::Clipboard, 'c', "\x07".to_owned())]
+    );
+}
+
+#[test]
 fn test_semantic_1539() {
     use wezterm_escape_parser::osc::FinalTermSemanticPrompt;
     let mut term = TestTerm::new(5, 10, 0);
